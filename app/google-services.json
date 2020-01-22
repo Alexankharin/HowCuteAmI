@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "227474848549",
+    "firebase_url": "https://howcuteami-c98f4.firebaseio.com",
+    "project_id": "howcuteami-c98f4",
+    "storage_bucket": "howcuteami-c98f4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227474848549:android:e5244bcc632e32e79238cc",
+        "android_client_info": {
+          "package_name": "com.beautyfromphoto.androidfacedetection"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "227474848549-vorb48tt2nq561q94odi6sc97jilb8l8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABgp6LYg2QCHB9lUk5_BUCKAagR_PaCHo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "227474848549-vorb48tt2nq561q94odi6sc97jilb8l8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,57 @@
+<LinearLayout xmlns:ads="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="How Cute Am I ? "
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textSize="18dp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnLoad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Load Photo"/>
+
+    <Button
+        android:id="@+id/btnDetectFace"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Estimate Faces" />
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save image" />
+
+    <ImageView
+        android:id="@+id/imgview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:gravity="bottom"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/bannerl_id" />
+
+
+</LinearLayout>
