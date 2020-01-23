@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.beautyfromphoto.androidfacedetection">
-    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
@@ -19,9 +18,6 @@
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
             android:value="face" />
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="@string/appl_id"/>
     </application>
 
 </manifest>

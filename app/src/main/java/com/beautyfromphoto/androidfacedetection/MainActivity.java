@@ -1,23 +1,27 @@
 package com.beautyfromphoto.androidfacedetection ;
 
-
 import android.app.Activity;
 import android.content.Intent;
 
 import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import androidx.exifinterface.media.ExifInterface;
+
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
-
 import android.os.Environment;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
@@ -26,18 +30,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
 
-import com.beautyfromphoto.androidfacedetection.R;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.AdRequest;
-
 
 import org.tensorflow.lite.Interpreter;
 
@@ -52,8 +48,6 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
-
-//import android.support.v7.app.AppCompatActivity;
 
 public class MainActivity extends Activity {
 
@@ -72,7 +66,6 @@ public class MainActivity extends Activity {
     Interpreter interpreter;
 
 
-
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,17 +75,6 @@ public class MainActivity extends Activity {
         btnDetFace = (Button)findViewById(R.id.btnDetectFace);
         imgView = (ImageView)findViewById(R.id.imgview);
         btnSave = (Button)findViewById(R.id.btnSave);
-
-        // ADS
-
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {
-            }
-        });
-        AdView mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
 
         try {
             interpreter=new Interpreter(loadModelFile(MainActivity.this));
@@ -174,20 +156,36 @@ public class MainActivity extends Activity {
         );
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        int orientation=-1;
+        Bitmap rotatedBitmap;
+        int rotatedWidth, rotatedHeight;
+        //BitmapFactory.Options dbo = new BitmapFactory.Options();
+        //Matrix m = new Matrix();
+        ExifInterface exifInterface;
         if (requestCode == RQS_LOADIMAGE
                 && resultCode == RESULT_OK){
             try {
+                Uri imageuri = data.getData();
+
+                assert imageuri != null;
                 InputStream inputStream =
-                        getContentResolver().openInputStream(data.getData());
+                        getContentResolver().openInputStream(imageuri);
                 myBitmap = BitmapFactory.decodeStream(inputStream);
-                inputStream.close();
+                orientation=getOrientation(imageuri);
+                Log.d("ORIENT", Integer.toString(orientation));
+                if (orientation > 0) {
+                    Matrix matrix = new Matrix();
+                    matrix.postRotate(orientation);
+
+                    myBitmap = Bitmap.createBitmap(myBitmap, 0, 0, myBitmap.getWidth(),
+                            myBitmap.getHeight(), matrix, true);
+                }
                 imgView.setImageBitmap(myBitmap);
 
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -230,7 +228,7 @@ public class MainActivity extends Activity {
         SparseArray<Face> faces = faceDetector.detect(frame);
         Face face;
 
-        float[][] labelProbArray = new float[1][1];
+        float[][] Answer = new float[1][1];
 
         imgData.order(ByteOrder.nativeOrder());
         //Draw Rectangles on the Faces
@@ -246,8 +244,8 @@ public class MainActivity extends Activity {
                 Bitmap tempbitmap2 = Bitmap.createBitmap(tempBitmap, (int)x1, (int)y1, (int) (x2-x1), (int) (y2-y1));
                 tempbitmap2 = Bitmap.createScaledBitmap(tempbitmap2, 112, 112, true);
                 convertBitmapToByteBuffer(tempbitmap2);
-                interpreter.run(imgData, labelProbArray);
-                String textToShow = String.format("%.3f", labelProbArray[0][0] * 10);
+                interpreter.run(imgData, Answer);
+                String textToShow = String.format("%.3f", Answer[0][0] * 10);
                 textToShow = textToShow + " ";
                 int width= tempCanvas.getWidth();
                 //int height=tempCanvas.getHeight();
@@ -292,6 +290,23 @@ public class MainActivity extends Activity {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
     }
 
+
+    private int getOrientation(Uri photoUri) {
+        Cursor cursor = getContentResolver().query(photoUri,
+                new String[]{MediaStore.Images.ImageColumns.ORIENTATION}, null, null, null);
+
+        if (cursor.getCount() != 1) {
+            cursor.close();
+            Log.d("ORIENT", "CURSOR COUNT NOT ONE");
+            return -1;
+        }
+        cursor.moveToFirst();
+        int orientation = cursor.getInt(0);
+        Log.d("ORIENT", "CURSOR READ VALUE");
+        cursor.close();
+        //cursor = null;
+        return orientation;
+    }
 }
 
 
