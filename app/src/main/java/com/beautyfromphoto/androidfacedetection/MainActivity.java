@@ -245,11 +245,11 @@ public class MainActivity extends Activity {
                 tempbitmap2 = Bitmap.createScaledBitmap(tempbitmap2, 112, 112, true);
                 convertBitmapToByteBuffer(tempbitmap2);
                 interpreter.run(imgData, Answer);
-                String textToShow = String.format("%.3f", Answer[0][0] * 10);
-                textToShow = textToShow + " ";
+                String textToShow = String.format("%.1f", (Answer[0][0]*5-1)/4 * 10);
+                textToShow = textToShow + "/10";
                 int width= tempCanvas.getWidth();
                 //int height=tempCanvas.getHeight();
-                int fontsize=Math.max(width/25,imgView.getWidth()/25);
+                int fontsize=Math.max(width/20,imgView.getWidth()/20);
                 fontPaint.setTextSize(fontsize);
                 tempCanvas.drawText(textToShow, x1, y1-10, fontPaint);
                 tempCanvas.drawRoundRect(new RectF(x1, y1, x2, y2), 2, 2, myRectPaint);
