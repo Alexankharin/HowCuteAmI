@@ -162,20 +162,24 @@ public class MainActivity extends Activity {
         int orientation=-1;
         Bitmap rotatedBitmap;
         int rotatedWidth, rotatedHeight;
-        //BitmapFactory.Options dbo = new BitmapFactory.Options();
-        //Matrix m = new Matrix();
-        ExifInterface exifInterface;
+        ExifInterface exif ;
         if (requestCode == RQS_LOADIMAGE
                 && resultCode == RESULT_OK){
             try {
                 Uri imageuri = data.getData();
-
                 assert imageuri != null;
                 InputStream inputStream =
                         getContentResolver().openInputStream(imageuri);
-                myBitmap = BitmapFactory.decodeStream(inputStream);
-                orientation=getOrientation(imageuri);
-                Log.d("ORIENT", Integer.toString(orientation));
+                orientation=getExifRotation(inputStream);
+                InputStream inputStream2 =
+                        getContentResolver().openInputStream(imageuri);
+
+                //orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+
+                Log.d("ORIENT", "Exif: " +orientation);
+                myBitmap = BitmapFactory.decodeStream(inputStream2);
+                //orientation=getOrientation(imageuri);
+                //Log.d("ORIENT", Integer.toString(orientation));
                 if (orientation > 0) {
                     Matrix matrix = new Matrix();
                     matrix.postRotate(orientation);
@@ -185,10 +189,9 @@ public class MainActivity extends Activity {
                 }
                 imgView.setImageBitmap(myBitmap);
 
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -291,21 +294,24 @@ public class MainActivity extends Activity {
     }
 
 
-    private int getOrientation(Uri photoUri) {
-        Cursor cursor = getContentResolver().query(photoUri,
-                new String[]{MediaStore.Images.ImageColumns.ORIENTATION}, null, null, null);
-
-        if (cursor.getCount() != 1) {
-            cursor.close();
-            Log.d("ORIENT", "CURSOR COUNT NOT ONE");
-            return -1;
+    public static int getExifRotation(InputStream is) {
+        if (is == null) return 0;
+        try {
+            ExifInterface exif = new ExifInterface(is);
+            // We only recognize a subset of orientation tag values
+            switch (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    return 90;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    return 180;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    return 270;
+                default:
+                    return ExifInterface.ORIENTATION_UNDEFINED;
+            }
+        } catch (IOException e) {
+            return 0;
         }
-        cursor.moveToFirst();
-        int orientation = cursor.getInt(0);
-        Log.d("ORIENT", "CURSOR READ VALUE");
-        cursor.close();
-        //cursor = null;
-        return orientation;
     }
 }
 
