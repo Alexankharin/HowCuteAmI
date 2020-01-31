@@ -99,84 +99,85 @@ public class MainActivity extends Activity {
         });
 
         btnDetFace.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                spinner.setVisibility(View.VISIBLE);
-                if(myBitmap == null){
-                    Toast.makeText(MainActivity.this,
-                            "myBitmap == null",
-                            Toast.LENGTH_LONG).show();
-                }
-                else{
-                    isFaceFound=false;
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            //Do long operation stuff here search stuff
-                            tempBitmap=detectFace();
-                            try {
+                                          @Override
+                                          public void onClick(View v) {
+                                              spinner.setVisibility(View.VISIBLE);
+                                              if(myBitmap == null){
+                                                  Toast.makeText(MainActivity.this,
+                                                          "myBitmap == null",
+                                                          Toast.LENGTH_LONG).show();
+                                              }
+                                              else{
+                                                  isFaceFound=false;
+                                                  new Thread() {
+                                                      @Override
+                                                      public void run() {
+                                                          //Do long operation stuff here search stuff
+                                                          tempBitmap=detectFace();
+                                                          try {
 
-                                // code runs in a thread
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        imgView.setImageDrawable(new BitmapDrawable(getResources(),tempBitmap));
-                                        spinner.setVisibility(View.GONE);
-                                        btnSave.setVisibility(View.VISIBLE);
+                                                              // code runs in a thread
+                                                              runOnUiThread(new Runnable() {
+                                                                                @Override
+                                                                                public void run() {
+                                                                                    imgView.setImageDrawable(new BitmapDrawable(getResources(),tempBitmap));
+                                                                                    spinner.setVisibility(View.GONE);
+                                                                                    btnSave.setVisibility(View.VISIBLE);
+                                                                                }
+                                                                            }
+                                                              );
+                                                          } catch (final Exception ignored) {
+                                                          }
+                                                      }
+                                                  }.start();
 
-                                    }
-                                }
-                                );
-                            } catch (final Exception ignored) {
-                            }
-                        }
-                    }.start();
+                                                  if (isFaceFound=false){
+                                                      Toast.makeText(MainActivity.this,
+                                                              "Faces not found",
+                                                              Toast.LENGTH_LONG).show();
+                                                  }
 
-                    if (isFaceFound=false){
-                        Toast.makeText(MainActivity.this,
-                                "Faces not found",
-                                Toast.LENGTH_LONG).show();
-                    }
-
-                }
+                                              }
 
 
-                //spinner.setVisibility(View.GONE);
-            }
-        }
+                                              //spinner.setVisibility(View.GONE);
+                                          }
+                                      }
         );
 
         btnSave.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                //Intent intent = new Intent();
-                if (tempBitmap!=null){
-                    File path = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Images");
-                    if(!path.exists()){
-                        path.mkdirs();
-                    }
-                    Long tsLong = System.currentTimeMillis()/1000;
-                    String ts = tsLong.toString();
-                    File outFile = new File(path, ts + ".jpeg");
+                                       @Override
+                                       public void onClick(View v) {
+                                           //Intent intent = new Intent();
+                                           if (tempBitmap!=null){
+                                               File path = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Images");
+                                               if(!path.exists()){
+                                                   path.mkdirs();
+                                               }
+                                               Long tsLong = System.currentTimeMillis()/1000;
+                                               String ts = tsLong.toString();
+                                               File outFile = new File(path, ts + ".jpeg");
 
-                    try {
-                        FileOutputStream outputStream = new FileOutputStream(outFile);
-                        tempBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-                        outputStream.close();
-                        Toast.makeText(MainActivity.this,
-                                "saved at " +getExternalFilesDir(Environment.DIRECTORY_PICTURES) +"/"+ "Images"+ ts + ".jpeg",
-                                Toast.LENGTH_LONG).show();
+                                               try {
+                                                   FileOutputStream outputStream = new FileOutputStream(outFile);
+                                                   tempBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                                                   outputStream.close();
+                                                   Toast.makeText(MainActivity.this,
+                                                           "saved at " +getExternalFilesDir(Environment.DIRECTORY_PICTURES) +"/"+ "Images"+ ts + ".jpeg",
+                                                           Toast.LENGTH_LONG).show();
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                else{Toast.makeText(MainActivity.this,
-                        "Empty file",
-                        Toast.LENGTH_LONG).show();
-                };
-            }
-        }
+                                               } catch (FileNotFoundException e) {
+                                                   e.printStackTrace();
+                                               } catch (IOException e) {
+                                                   e.printStackTrace();
+                                               }
+                                           }
+                                           else{Toast.makeText(MainActivity.this,
+                                                   "Empty file",
+                                                   Toast.LENGTH_LONG).show();
+                                           };
+                                       }
+                                   }
         );
     }
 
@@ -336,5 +337,3 @@ public class MainActivity extends Activity {
         }
     }
 }
-
-
