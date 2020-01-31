@@ -78,8 +78,8 @@ public class MainActivity extends Activity {
         imgView = (ImageView)findViewById(R.id.imgview);
         btnSave = (Button)findViewById(R.id.btnSave);
         spinner=(ProgressBar)findViewById(R.id.pBar);
-        btnDetFace.setVisibility(View.GONE);
-        btnSave.setVisibility(View.GONE);
+        btnDetFace.setVisibility(View.INVISIBLE);
+        btnSave.setVisibility(View.INVISIBLE);
         try {
             interpreter=new Interpreter(loadModelFile(MainActivity.this));
             Log.e("TIME", "Interpreter_started ");
@@ -123,6 +123,7 @@ public class MainActivity extends Activity {
                                         imgView.setImageDrawable(new BitmapDrawable(getResources(),tempBitmap));
                                         spinner.setVisibility(View.GONE);
                                         btnSave.setVisibility(View.VISIBLE);
+
                                     }
                                 }
                                 );
@@ -166,8 +167,6 @@ public class MainActivity extends Activity {
                                 "saved at " +getExternalFilesDir(Environment.DIRECTORY_PICTURES) +"/"+ "Images"+ ts + ".jpeg",
                                 Toast.LENGTH_LONG).show();
 
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -189,6 +188,7 @@ public class MainActivity extends Activity {
                 && resultCode == RESULT_OK){
             try {
                 btnDetFace.setVisibility(View.VISIBLE);
+                btnSave.setVisibility(View.INVISIBLE);
                 Uri imageuri = data.getData();
                 assert imageuri != null;
                 InputStream inputStream =

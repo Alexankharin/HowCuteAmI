@@ -31,13 +31,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Estimate Faces" />
-
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save image" />
-
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save image"
+        />
     <RelativeLayout
         android:layout_gravity="bottom"
         android:layout_width="wrap_content"
@@ -59,6 +58,7 @@
             android:layout_centerInParent="true"
             android:visibility="gone"/>
     </RelativeLayout>
+
 
 
 </LinearLayout>
