@@ -1,14 +1,15 @@
 <LinearLayout xmlns:ads="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
-     android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="10dp"
     android:paddingRight="10dp"
     android:paddingTop="10dp"
     android:paddingBottom="10dp"
     android:orientation="vertical"
-    >
-
+    android:weightSum="6"
+    tools:ignore="ExtraText">
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
@@ -19,28 +20,45 @@
         android:textSize="18dp"
         android:textStyle="bold" />
 
-    <Button
-        android:id="@+id/btnLoad"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Load Photo"/>
+        <Button
+            android:id="@+id/btnLoad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Load Photo"/>
 
-    <Button
-        android:id="@+id/btnDetectFace"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Estimate Faces" />
+        <Button
+            android:id="@+id/btnDetectFace"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Estimate Faces" />
 
-    <Button
-        android:id="@+id/btnSave"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Save image" />
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save image" />
 
-    <ImageView
-        android:id="@+id/imgview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_gravity="bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <ImageView
+            android:id="@+id/imgview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+        </ImageView>
+        <ProgressBar
+            android:id="@+id/pBar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone"/>
+    </RelativeLayout>
 
 
 </LinearLayout>
