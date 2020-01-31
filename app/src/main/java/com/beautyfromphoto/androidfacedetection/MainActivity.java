@@ -27,6 +27,7 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -53,6 +54,7 @@ public class MainActivity extends Activity {
 
     private static final int RQS_LOADIMAGE = 1;
     private Button btnLoad, btnDetFace, btnSave;
+    private ProgressBar spinner;
     private ImageView imgView;
     private Bitmap myBitmap;
     private int[] intValues = new int[112 * 112];
@@ -75,7 +77,9 @@ public class MainActivity extends Activity {
         btnDetFace = (Button)findViewById(R.id.btnDetectFace);
         imgView = (ImageView)findViewById(R.id.imgview);
         btnSave = (Button)findViewById(R.id.btnSave);
-
+        spinner=(ProgressBar)findViewById(R.id.pBar);
+        btnDetFace.setVisibility(View.GONE);
+        btnSave.setVisibility(View.GONE);
         try {
             interpreter=new Interpreter(loadModelFile(MainActivity.this));
             Log.e("TIME", "Interpreter_started ");
@@ -97,6 +101,7 @@ public class MainActivity extends Activity {
         btnDetFace.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
+                spinner.setVisibility(View.VISIBLE);
                 if(myBitmap == null){
                     Toast.makeText(MainActivity.this,
                             "myBitmap == null",
@@ -104,21 +109,41 @@ public class MainActivity extends Activity {
                 }
                 else{
                     isFaceFound=false;
-                    detectFace();
-                    if (isFaceFound=true){
-                    Toast.makeText(MainActivity.this,
-                            "Done",
-                            Toast.LENGTH_LONG).show();
-                    }
-                    else
-                        {
-                            Toast.makeText(MainActivity.this,
-                                    "Faces not found",
-                                    Toast.LENGTH_LONG).show();
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            //Do long operation stuff here search stuff
+                            tempBitmap=detectFace();
+                            try {
+
+                                // code runs in a thread
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        imgView.setImageDrawable(new BitmapDrawable(getResources(),tempBitmap));
+                                        spinner.setVisibility(View.GONE);
+                                        btnSave.setVisibility(View.VISIBLE);
+                                    }
+                                }
+                                );
+                            } catch (final Exception ignored) {
+                            }
                         }
+                    }.start();
+
+                    if (isFaceFound=false){
+                        Toast.makeText(MainActivity.this,
+                                "Faces not found",
+                                Toast.LENGTH_LONG).show();
+                    }
+
                 }
+
+
+                //spinner.setVisibility(View.GONE);
             }
-        });
+        }
+        );
 
         btnSave.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -160,12 +185,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         int orientation=-1;
-        Bitmap rotatedBitmap;
-        int rotatedWidth, rotatedHeight;
-        ExifInterface exif ;
         if (requestCode == RQS_LOADIMAGE
                 && resultCode == RESULT_OK){
             try {
+                btnDetFace.setVisibility(View.VISIBLE);
                 Uri imageuri = data.getData();
                 assert imageuri != null;
                 InputStream inputStream =
@@ -200,7 +223,7 @@ public class MainActivity extends Activity {
     reference:
     https://search-codelabs.appspot.com/codelabs/face-detection
      */
-    private void detectFace(){
+    private Bitmap detectFace(){
 
         //Create a Paint object for drawing with
         Paint myRectPaint = new Paint();
@@ -257,9 +280,8 @@ public class MainActivity extends Activity {
                 tempCanvas.drawText(textToShow, x1, y1-10, fontPaint);
                 tempCanvas.drawRoundRect(new RectF(x1, y1, x2, y2), 2, 2, myRectPaint);
             }
-            imgView.setImageDrawable(new BitmapDrawable(getResources(),tempBitmap));
         }
-
+        return tempBitmap;
     }
 
     private void convertBitmapToByteBuffer(Bitmap bitmap) {
