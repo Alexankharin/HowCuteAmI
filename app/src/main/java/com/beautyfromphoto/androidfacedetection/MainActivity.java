@@ -57,13 +57,13 @@ public class MainActivity extends Activity {
     private ProgressBar spinner;
     private ImageView imgView;
     private Bitmap myBitmap;
-    private int[] intValues = new int[112 * 112];
+    private int[] intValues = new int[96 * 96];
     private static final int IMAGE_MEAN = 0;
-    private static final float IMAGE_STD = 1.0f;
+    private static final float IMAGE_STD = 255.0f;
     private Bitmap tempBitmap;
     public boolean isFaceFound=false;
     ByteBuffer imgData = ByteBuffer.allocateDirect(
-            4 * 1 * 112 * 112 * 3);
+            4 * 1 * 96 * 96 * 3);
 
     Interpreter interpreter;
 
@@ -269,7 +269,7 @@ public class MainActivity extends Activity {
                 float x2 = Math.min(x1 + face.getWidth(),frame.getBitmap().getWidth());
                 float y2 = Math.min(y1 + face.getHeight(),frame.getBitmap().getHeight());
                 Bitmap tempbitmap2 = Bitmap.createBitmap(tempBitmap, (int)x1, (int)y1, (int) (x2-x1), (int) (y2-y1));
-                tempbitmap2 = Bitmap.createScaledBitmap(tempbitmap2, 112, 112, true);
+                tempbitmap2 = Bitmap.createScaledBitmap(tempbitmap2, 96, 96, true);
                 convertBitmapToByteBuffer(tempbitmap2);
                 interpreter.run(imgData, Answer);
                 String textToShow = String.format("%.1f", (Answer[0][0]*5-1)/4 * 10);
@@ -277,7 +277,7 @@ public class MainActivity extends Activity {
                 int width= tempCanvas.getWidth();
                 //int height=tempCanvas.getHeight();
                 int fontsize=Math.max(width/20,imgView.getWidth()/20);
-                fontPaint.setTextSize(fontsize);
+                fontPaint.setTextSize(width/15);
                 tempCanvas.drawText(textToShow, x1, y1-10, fontPaint);
                 tempCanvas.drawRoundRect(new RectF(x1, y1, x2, y2), 2, 2, myRectPaint);
             }
@@ -294,8 +294,8 @@ public class MainActivity extends Activity {
         // Convert the image to floating point.
         int pixel = 0;
         long startTime = SystemClock.uptimeMillis();
-        for (int i = 0; i < 112; ++i) {
-            for (int j = 0; j < 112; ++j) {
+        for (int i = 0; i < 96; ++i) {
+            for (int j = 0; j < 96; ++j) {
                 final int val = intValues[pixel++];
                 imgData.putFloat((((val >> 16) & 0xFF)-IMAGE_MEAN)/IMAGE_STD);
                 imgData.putFloat((((val >> 8) & 0xFF)-IMAGE_MEAN)/IMAGE_STD);
