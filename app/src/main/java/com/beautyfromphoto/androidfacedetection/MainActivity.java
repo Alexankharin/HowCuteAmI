@@ -27,6 +27,7 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -53,15 +54,16 @@ public class MainActivity extends Activity {
 
     private static final int RQS_LOADIMAGE = 1;
     private Button btnLoad, btnDetFace, btnSave;
+    private ProgressBar spinner;
     private ImageView imgView;
     private Bitmap myBitmap;
-    private int[] intValues = new int[112 * 112];
+    private int[] intValues = new int[96 * 96];
     private static final int IMAGE_MEAN = 0;
-    private static final float IMAGE_STD = 1.0f;
+    private static final float IMAGE_STD = 255.0f;
     private Bitmap tempBitmap;
     public boolean isFaceFound=false;
     ByteBuffer imgData = ByteBuffer.allocateDirect(
-            4 * 1 * 112 * 112 * 3);
+            4 * 1 * 96 * 96 * 3);
 
     Interpreter interpreter;
 
@@ -75,7 +77,9 @@ public class MainActivity extends Activity {
         btnDetFace = (Button)findViewById(R.id.btnDetectFace);
         imgView = (ImageView)findViewById(R.id.imgview);
         btnSave = (Button)findViewById(R.id.btnSave);
-
+        spinner=(ProgressBar)findViewById(R.id.pBar);
+        btnDetFace.setVisibility(View.INVISIBLE);
+        btnSave.setVisibility(View.INVISIBLE);
         try {
             interpreter=new Interpreter(loadModelFile(MainActivity.this));
             Log.e("TIME", "Interpreter_started ");
@@ -95,64 +99,85 @@ public class MainActivity extends Activity {
         });
 
         btnDetFace.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                if(myBitmap == null){
-                    Toast.makeText(MainActivity.this,
-                            "myBitmap == null",
-                            Toast.LENGTH_LONG).show();
-                }
-                else{
-                    isFaceFound=false;
-                    detectFace();
-                    if (isFaceFound=true){
-                    Toast.makeText(MainActivity.this,
-                            "Done",
-                            Toast.LENGTH_LONG).show();
-                    }
-                    else
-                        {
-                            Toast.makeText(MainActivity.this,
-                                    "Faces not found",
-                                    Toast.LENGTH_LONG).show();
-                        }
-                }
-            }
-        });
+                                          @Override
+                                          public void onClick(View v) {
+                                              spinner.setVisibility(View.VISIBLE);
+                                              if(myBitmap == null){
+                                                  Toast.makeText(MainActivity.this,
+                                                          "myBitmap == null",
+                                                          Toast.LENGTH_LONG).show();
+                                              }
+                                              else{
+                                                  isFaceFound=false;
+                                                  new Thread() {
+                                                      @Override
+                                                      public void run() {
+                                                          //Do long operation stuff here search stuff
+                                                          tempBitmap=detectFace();
+                                                          try {
+
+                                                              // code runs in a thread
+                                                              runOnUiThread(new Runnable() {
+                                                                                @Override
+                                                                                public void run() {
+                                                                                    imgView.setImageDrawable(new BitmapDrawable(getResources(),tempBitmap));
+                                                                                    spinner.setVisibility(View.GONE);
+                                                                                    btnSave.setVisibility(View.VISIBLE);
+                                                                                }
+                                                                            }
+                                                              );
+                                                          } catch (final Exception ignored) {
+                                                          }
+                                                      }
+                                                  }.start();
+
+                                                  if (isFaceFound=false){
+                                                      Toast.makeText(MainActivity.this,
+                                                              "Faces not found",
+                                                              Toast.LENGTH_LONG).show();
+                                                  }
+
+                                              }
+
+
+                                              //spinner.setVisibility(View.GONE);
+                                          }
+                                      }
+        );
 
         btnSave.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                //Intent intent = new Intent();
-                if (tempBitmap!=null){
-                    File path = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Images");
-                    if(!path.exists()){
-                        path.mkdirs();
-                    }
-                    Long tsLong = System.currentTimeMillis()/1000;
-                    String ts = tsLong.toString();
-                    File outFile = new File(path, ts + ".jpeg");
+                                       @Override
+                                       public void onClick(View v) {
+                                           //Intent intent = new Intent();
+                                           if (tempBitmap!=null){
+                                               File path = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Images");
+                                               if(!path.exists()){
+                                                   path.mkdirs();
+                                               }
+                                               Long tsLong = System.currentTimeMillis()/1000;
+                                               String ts = tsLong.toString();
+                                               File outFile = new File(path, ts + ".jpeg");
 
-                    try {
-                        FileOutputStream outputStream = new FileOutputStream(outFile);
-                        tempBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-                        outputStream.close();
-                        Toast.makeText(MainActivity.this,
-                                "saved at " +getExternalFilesDir(Environment.DIRECTORY_PICTURES) +"/"+ "Images"+ ts + ".jpeg",
-                                Toast.LENGTH_LONG).show();
+                                               try {
+                                                   FileOutputStream outputStream = new FileOutputStream(outFile);
+                                                   tempBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                                                   outputStream.close();
+                                                   Toast.makeText(MainActivity.this,
+                                                           "saved at " +getExternalFilesDir(Environment.DIRECTORY_PICTURES) +"/"+ "Images"+ ts + ".jpeg",
+                                                           Toast.LENGTH_LONG).show();
 
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                else{Toast.makeText(MainActivity.this,
-                        "Empty file",
-                        Toast.LENGTH_LONG).show();
-                };
-            }
-        }
+                                               } catch (FileNotFoundException e) {
+                                                   e.printStackTrace();
+                                               } catch (IOException e) {
+                                                   e.printStackTrace();
+                                               }
+                                           }
+                                           else{Toast.makeText(MainActivity.this,
+                                                   "Empty file",
+                                                   Toast.LENGTH_LONG).show();
+                                           };
+                                       }
+                                   }
         );
     }
 
@@ -160,12 +185,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         int orientation=-1;
-        Bitmap rotatedBitmap;
-        int rotatedWidth, rotatedHeight;
-        ExifInterface exif ;
         if (requestCode == RQS_LOADIMAGE
                 && resultCode == RESULT_OK){
             try {
+                btnDetFace.setVisibility(View.VISIBLE);
+                btnSave.setVisibility(View.INVISIBLE);
                 Uri imageuri = data.getData();
                 assert imageuri != null;
                 InputStream inputStream =
@@ -200,7 +224,7 @@ public class MainActivity extends Activity {
     reference:
     https://search-codelabs.appspot.com/codelabs/face-detection
      */
-    private void detectFace(){
+    private Bitmap detectFace(){
 
         //Create a Paint object for drawing with
         Paint myRectPaint = new Paint();
@@ -245,7 +269,7 @@ public class MainActivity extends Activity {
                 float x2 = Math.min(x1 + face.getWidth(),frame.getBitmap().getWidth());
                 float y2 = Math.min(y1 + face.getHeight(),frame.getBitmap().getHeight());
                 Bitmap tempbitmap2 = Bitmap.createBitmap(tempBitmap, (int)x1, (int)y1, (int) (x2-x1), (int) (y2-y1));
-                tempbitmap2 = Bitmap.createScaledBitmap(tempbitmap2, 112, 112, true);
+                tempbitmap2 = Bitmap.createScaledBitmap(tempbitmap2, 96, 96, true);
                 convertBitmapToByteBuffer(tempbitmap2);
                 interpreter.run(imgData, Answer);
                 String textToShow = String.format("%.1f", (Answer[0][0]*5-1)/4 * 10);
@@ -253,13 +277,12 @@ public class MainActivity extends Activity {
                 int width= tempCanvas.getWidth();
                 //int height=tempCanvas.getHeight();
                 int fontsize=Math.max(width/20,imgView.getWidth()/20);
-                fontPaint.setTextSize(fontsize);
+                fontPaint.setTextSize(width/15);
                 tempCanvas.drawText(textToShow, x1, y1-10, fontPaint);
                 tempCanvas.drawRoundRect(new RectF(x1, y1, x2, y2), 2, 2, myRectPaint);
             }
-            imgView.setImageDrawable(new BitmapDrawable(getResources(),tempBitmap));
         }
-
+        return tempBitmap;
     }
 
     private void convertBitmapToByteBuffer(Bitmap bitmap) {
@@ -271,8 +294,8 @@ public class MainActivity extends Activity {
         // Convert the image to floating point.
         int pixel = 0;
         long startTime = SystemClock.uptimeMillis();
-        for (int i = 0; i < 112; ++i) {
-            for (int j = 0; j < 112; ++j) {
+        for (int i = 0; i < 96; ++i) {
+            for (int j = 0; j < 96; ++j) {
                 final int val = intValues[pixel++];
                 imgData.putFloat((((val >> 16) & 0xFF)-IMAGE_MEAN)/IMAGE_STD);
                 imgData.putFloat((((val >> 8) & 0xFF)-IMAGE_MEAN)/IMAGE_STD);
@@ -314,5 +337,3 @@ public class MainActivity extends Activity {
         }
     }
 }
-
-
