@@ -20,23 +20,38 @@
         android:textSize="18dp"
         android:textStyle="bold" />
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
         <Button
             android:id="@+id/btnLoad"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:text="Load Photo"/>
 
         <Button
             android:id="@+id/btnDetectFace"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:text="Estimate Faces" />
-    <Button
-        android:id="@+id/btnSave"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Save image"
-        />
+        <ImageButton
+            android:id="@+id/btnSave"
+            android:layout_width="30pt"
+            android:layout_height="30pt"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/share_icon"
+            android:baselineAlignBottom="true"
+            android:background="@color/colorPrimary"
+            android:visibility="invisible"
+            />
+
+
+    </LinearLayout>
+
+
+
     <RelativeLayout
         android:layout_gravity="bottom"
         android:layout_width="wrap_content"
@@ -57,6 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:visibility="gone"/>
+
     </RelativeLayout>
 
 

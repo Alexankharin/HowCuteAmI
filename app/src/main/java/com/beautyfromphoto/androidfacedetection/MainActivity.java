@@ -13,6 +13,9 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+
+import androidx.core.content.FileProvider;
+
 import androidx.exifinterface.media.ExifInterface;
 
 import android.net.Uri;
@@ -26,6 +29,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -53,7 +57,8 @@ import java.nio.channels.FileChannel;
 public class MainActivity extends Activity {
 
     private static final int RQS_LOADIMAGE = 1;
-    private Button btnLoad, btnDetFace, btnSave;
+    private Button btnLoad, btnDetFace;
+    private ImageButton btnSave;
     private ProgressBar spinner;
     private ImageView imgView;
     private Bitmap myBitmap;
@@ -76,7 +81,7 @@ public class MainActivity extends Activity {
         btnLoad = (Button)findViewById(R.id.btnLoad);
         btnDetFace = (Button)findViewById(R.id.btnDetectFace);
         imgView = (ImageView)findViewById(R.id.imgview);
-        btnSave = (Button)findViewById(R.id.btnSave);
+        btnSave = (ImageButton)findViewById(R.id.btnSave);
         spinner=(ProgressBar)findViewById(R.id.pBar);
         btnDetFace.setVisibility(View.INVISIBLE);
         btnSave.setVisibility(View.INVISIBLE);
@@ -145,39 +150,64 @@ public class MainActivity extends Activity {
                                       }
         );
 
-        btnSave.setOnClickListener(new View.OnClickListener(){
-                                       @Override
-                                       public void onClick(View v) {
-                                           //Intent intent = new Intent();
-                                           if (tempBitmap!=null){
-                                               File path = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Images");
-                                               if(!path.exists()){
-                                                   path.mkdirs();
-                                               }
-                                               Long tsLong = System.currentTimeMillis()/1000;
-                                               String ts = tsLong.toString();
-                                               File outFile = new File(path, ts + ".jpeg");
+        btnSave.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //Intent intent = new Intent();
+                        if (tempBitmap != null) {
+                            //File path = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "Images");
+                            //File path = new File(getApplicationContext().getCacheDir(), "images");
+                            //if (!path.exists()) {
+                            //    path.mkdirs();
+                            //}
+                            Long tsLong = System.currentTimeMillis() / 1000;
+                            String ts = tsLong.toString();
+                            //File outFile = new File(path, ts + ".jpeg");
+                            File cachePath = new File(getApplicationContext().getCacheDir(), "images");
+                            if (!cachePath.exists()) {
+                                cachePath.mkdirs();
+                            }
 
-                                               try {
-                                                   FileOutputStream outputStream = new FileOutputStream(outFile);
-                                                   tempBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-                                                   outputStream.close();
-                                                   Toast.makeText(MainActivity.this,
-                                                           "saved at " +getExternalFilesDir(Environment.DIRECTORY_PICTURES) +"/"+ "Images"+ ts + ".jpeg",
-                                                           Toast.LENGTH_LONG).show();
+                            try {
+                                //FileOutputStream outputStream = new FileOutputStream(outFile);
+                                FileOutputStream outputStream = new FileOutputStream(cachePath + "/image"+ts+".jpeg");
+                                tempBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                                outputStream.close();
+                                //Toast.makeText(MainActivity.this,
+                                //       "saved at " + cachePath + "/image"+ts+".jpeg",
+                                //       Toast.LENGTH_LONG).show();
 
-                                               } catch (FileNotFoundException e) {
-                                                   e.printStackTrace();
-                                               } catch (IOException e) {
-                                                   e.printStackTrace();
-                                               }
-                                           }
-                                           else{Toast.makeText(MainActivity.this,
-                                                   "Empty file",
-                                                   Toast.LENGTH_LONG).show();
-                                           };
-                                       }
-                                   }
+
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                            //FileOutputStream outputStream = new FileOutputStream();
+                            File imagePath = new File(getApplicationContext().getCacheDir(), "images");
+                            File newFile = new File(imagePath, "/image"+ts+".jpeg");
+                            Uri contentUri = FileProvider.getUriForFile(getApplicationContext(), "com.beautyfromphoto.androidfacedetection.fileprovider", newFile);
+
+
+                            Intent shareIntent = new Intent();
+                            shareIntent.setAction(Intent.ACTION_SEND);
+                            shareIntent.setType("image/*");
+                            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            //shareIntent.putExtra(Intent.EXTRA_TEXT, "Hello, This is test Sharing");
+                            shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+                            startActivity(Intent.createChooser(shareIntent, "Send your image"));
+
+                        } else {
+                            Toast.makeText(MainActivity.this,
+                                    "Empty file",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        ;
+
+                    }
+                }
         );
     }
 
@@ -268,7 +298,9 @@ public class MainActivity extends Activity {
                 float y1 = Math.max(face.getPosition().y,0);
                 float x2 = Math.min(x1 + face.getWidth(),frame.getBitmap().getWidth());
                 float y2 = Math.min(y1 + face.getHeight(),frame.getBitmap().getHeight());
-                Bitmap tempbitmap2 = Bitmap.createBitmap(tempBitmap, (int)x1, (int)y1, (int) (x2-x1), (int) (y2-y1));
+                float reulerZ=face.getEulerZ();
+                Bitmap tempbitmap2 = Bitmap.createBitmap(tempBitmap, (int) x1, (int) y1, (int) (x2 - x1), (int) (y2 - y1));
+                tempbitmap2=RotateBitmap(tempbitmap2,reulerZ);
                 tempbitmap2 = Bitmap.createScaledBitmap(tempbitmap2, 96, 96, true);
                 convertBitmapToByteBuffer(tempbitmap2);
                 interpreter.run(imgData, Answer);
@@ -335,5 +367,25 @@ public class MainActivity extends Activity {
         } catch (IOException e) {
             return 0;
         }
+    }
+    private void shareImage(File imagePath) {
+        //Uri filepath=Uri.parse(imagePath.toString());
+        //Uri filepath=Uri.fromFile(imagePath);
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.setType("image/*");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "Here is My BEATYSCORE");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(imagePath));
+        startActivity(Intent.createChooser(shareIntent, "Send your image"));
+        //Log.e("img", filepath.toString());
+        Log.e("img", imagePath.toString());
+    }
+
+    public static Bitmap RotateBitmap(Bitmap source, float angle)
+    {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+
     }
 }
