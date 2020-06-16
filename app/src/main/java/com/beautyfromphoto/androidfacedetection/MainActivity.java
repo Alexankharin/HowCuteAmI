@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
     private Bitmap tempbitmapnolines;
     public boolean isFaceFound = false;
     private Uri tempname;
-    private int lineflag=0;
+    private int lineflag=1;
     String currentPhotoPath;
 
 
@@ -192,8 +192,10 @@ public class MainActivity extends Activity {
                                                                                 public void run() {
                                                                                     imgView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
                                                                                     spinner.setVisibility(View.GONE);
+                                                                                    if(isFaceFound==true){
                                                                                     btnSave.show();
                                                                                     btnLines.show();
+                                                                                    }
                                                                                 }
                                                                             }
                                                               );
@@ -241,7 +243,7 @@ public class MainActivity extends Activity {
 
                             try {
                                 //FileOutputStream outputStream = new FileOutputStream(outFile);
-                                FileOutputStream outputStream = new FileOutputStream(cachePath + "/image"+ts+".jpeg");
+                                FileOutputStream outputStream = new FileOutputStream(cachePath + "/image"+"temp"+".jpeg");
                                 tosavebitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
                                 outputStream.close();
 
@@ -258,7 +260,7 @@ public class MainActivity extends Activity {
 
                             //FileOutputStream outputStream = new FileOutputStream();
                             File imagePath = new File(getApplicationContext().getCacheDir(), "images");
-                            File newFile = new File(imagePath, "/image"+ts+".jpeg");
+                            File newFile = new File(imagePath, "/image"+"temp"+".jpeg");
                             Uri contentUri = FileProvider.getUriForFile(getApplicationContext(), "com.beautyfromphoto.androidfacedetection.fileprovider", newFile);
                             Log.d("saved", contentUri.toString());
 
@@ -296,6 +298,8 @@ public class MainActivity extends Activity {
                 myBitmap=getimagefromUri(tempname);
                 imgView.setImageBitmap(myBitmap);
             }
+            btnLines.hide();
+            btnSave.hide();
         }
         else if (requestCode == REQUEST_CODE_PHOTO) {
             Log.d("NOPHOTO", String.valueOf(resultCode));
@@ -304,7 +308,7 @@ public class MainActivity extends Activity {
             Toast.makeText(MainActivity.this,
                     "photo not loaded",
                     Toast.LENGTH_LONG).show();
-
+            btnLines.hide();
             btnDetFace.hide();
             btnSave.hide();
         }
@@ -317,6 +321,7 @@ public class MainActivity extends Activity {
                 && resultCode == RESULT_OK) {
             try {
                 btnDetFace.show();
+                btnLines.hide();
                 btnSave.hide();
                 Uri imageuri = data.getData();
                 assert imageuri != null;
@@ -418,9 +423,9 @@ public class MainActivity extends Activity {
                 Object[] inputs = {imgData};
                 Map<Integer, Object> outputs = new HashMap<>();
                 outputs.put(1, Beauty);
-                outputs.put(3, Age);
+                //outputs.put(3, Age);
                 outputs.put(0, Gender);
-                outputs.put(2, Crime);
+                //outputs.put(2, Crime);
                 interpreter.runForMultipleInputsOutputs(inputs, outputs);
                 String textToShow = String.format("%.1f", ((Beauty[0][0]*10 + 1.8))/1.18);
                 textToShow = textToShow + "/10 ";
@@ -607,7 +612,12 @@ public class MainActivity extends Activity {
         if (!imagePath.exists()) {
             imagePath.mkdirs();
         }
+        Uri newfileperm;
         File newFile = new File(imagePath, "/image"+"temp"+".jpeg");
+        if (newFile.exists()){
+            newFile.delete(); // here i'm checking if file exists and if yes then i'm deleting it but its not working
+        }
+        newFile = new File(imagePath, "/image"+"temp"+".jpeg");
         Log.d("FILECREAT", newFile.toString());
         tempname=FileProvider.getUriForFile(getApplicationContext(), "com.beautyfromphoto.androidfacedetection.fileprovider", newFile);
         return tempname;
